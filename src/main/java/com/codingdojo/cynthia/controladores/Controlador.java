@@ -9,11 +9,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.codingdojo.cynthia.modelos.Etiqueta;
 import com.codingdojo.cynthia.modelos.Pregunta;
+import com.codingdojo.cynthia.modelos.Respuesta;
 import com.codingdojo.cynthia.servicios.Servicios;
 
 import jakarta.validation.Valid;
@@ -45,7 +47,9 @@ public class Controlador {
 	@PostMapping("/crear")
 	public String crear(@Valid @ModelAttribute("pregunta") Pregunta pregunta,
 						BindingResult result,
-						@RequestParam("textoEtiquetas") String textoEtiquetas) {
+						@RequestParam("textoEtiquetas") String textoEtiquetas
+						/*Recibe el valor que el usuario ingresó en input*/
+			) {
 		
 		if(result.hasErrors()) {
 			return "nueva.jsp";
@@ -95,6 +99,28 @@ public class Controlador {
 			
 		}
 		
+	}
+	
+	@GetMapping("/preguntas/{id}")
+	public String pregunta(@PathVariable("id") Long id, /*Obtiene info de URL*/
+						   Model model,
+						   @ModelAttribute("respuesta") Respuesta respuesta
+						   /*ModelAttribute me genera un OBJETO vacío, formulario*/
+			) {
+		Pregunta pregunta = servicio.encuentraPregunta(id);
+		model.addAttribute("pregunta", pregunta);
+		return "pregunta.jsp";
+	}
+	
+	@PostMapping("/respuesta")
+	public String respuesta(@Valid @ModelAttribute("respuesta") Respuesta respuesta,
+							BindingResult result) {
+		if(result.hasErrors()) {
+			return "pregunta.jsp";
+		} else {
+			servicio.guardarRespuesta(respuesta);
+			return "redirect:/preguntas/"+respuesta.getPregunta().getId();
+		}
 	}
 	
 }
